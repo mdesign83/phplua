@@ -211,6 +211,7 @@ static void php_lua_get_zval_from_stack(lua_State *L, int index, zval *ret TSRML
       zval *akey,*aval;
 
       /* table has been moved by one because of the pushnil */
+      /* this will ONLY work with negative indices! */
       while (lua_next(L, index-1) != 0)
       {
         ALLOC_INIT_ZVAL(akey);
@@ -231,8 +232,8 @@ static void php_lua_get_zval_from_stack(lua_State *L, int index, zval *ret TSRML
             break;
         }
         lua_pop(L, 1);  /* removes `value'; keeps `key' for next iteration */
+        zval_ptr_dtor(&akey);
       }
-      zval_ptr_dtor(&akey);
       break;
 
 
@@ -372,8 +373,8 @@ static int php_lua_callback(lua_State *L) /* {{{ */
   int i;
   for (i = 1; i <= n; i++) {
     ALLOC_INIT_ZVAL(params[i-1]);
-    MAKE_STD_ZVAL(params[i-1]);
-    php_lua_get_zval_from_stack(L, i, params[i-1] TSRMLS_CC);
+    /* php_lua_get_zval_from_stack won't work with positive indices */
+    php_lua_get_zval_from_stack(L,-n-1+i,params[i-1] TSRMLS_CC);
   }
 
   /* XXX no check - do we need one? :S */
@@ -386,6 +387,7 @@ static int php_lua_callback(lua_State *L) /* {{{ */
   for (i = 0; i < n; i++) {
     zval_ptr_dtor(&params[i]);
   }
+  efree(params);
 
   zval_ptr_dtor(&return_value);
 
@@ -713,7 +715,6 @@ PHP_METHOD(lua,expose_function)
   LUA_G(lua_callback)=erealloc(LUA_G(lua_callback),sizeof(zval)*(LUA_G(lua_callback_count)+1));
 
   ALLOC_INIT_ZVAL(LUA_G(lua_callback)[LUA_G(lua_callback_count)]);
-  MAKE_STD_ZVAL(LUA_G(lua_callback)[LUA_G(lua_callback_count)]);
   *LUA_G(lua_callback)[LUA_G(lua_callback_count)] = *callback;
   zval_copy_ctor(LUA_G(lua_callback)[LUA_G(lua_callback_count)]);
 
