@@ -292,7 +292,7 @@ static zval *php_lua_read_property(zval *obj, zval *prop, int type TSRMLS_DC) /*
     MAKE_STD_ZVAL(retval);
     lua_getfield(L, LUA_GLOBALSINDEX, Z_STRVAL_P(prop) TSRMLS_CC);
     php_lua_get_zval_from_stack(L, -1, retval TSRMLS_CC);
-    retval->refcount--;
+    ZVAL_DELREF(retval);
   } else {
     ALLOC_INIT_ZVAL(retval);
   }
@@ -768,40 +768,33 @@ zend_function_entry lua_functions[] = {
 
 /* {{{ ARG_INFO */
 
-static
 ZEND_BEGIN_ARG_INFO_EX(arginfo_lua_call, 0, 0, 2)
 	ZEND_ARG_INFO(0, method)
 	ZEND_ARG_INFO(0, args)
 ZEND_END_ARG_INFO()
 
-static
 ZEND_BEGIN_ARG_INFO_EX(arginfo_lua_call_table, 0, 0, 2)
   ZEND_ARG_INFO(0, callback)
   ZEND_ARG_INFO(0, args)
 ZEND_END_ARG_INFO()
 
-static
 ZEND_BEGIN_ARG_INFO_EX(arginfo_lua_call_function, 0, 0, 2)
   ZEND_ARG_INFO(0, function)
   ZEND_ARG_INFO(0, args)
 ZEND_END_ARG_INFO()
 
-static
 ZEND_BEGIN_ARG_INFO_EX(arginfo_lua_evaluate, 0, 0, 1)
   ZEND_ARG_INFO(0, code)
 ZEND_END_ARG_INFO()
 
-static
 ZEND_BEGIN_ARG_INFO_EX(arginfo_lua_evaluatefile, 0, 0, 1)
   ZEND_ARG_INFO(0, file)
 ZEND_END_ARG_INFO()
 
-static
 ZEND_BEGIN_ARG_INFO_EX(arginfo_lua_expose_function, 0, 0, 1)
   ZEND_ARG_INFO(0, callback)
 ZEND_END_ARG_INFO()
 
-static
 ZEND_BEGIN_ARG_INFO_EX(arginfo_lua_compile, 0, 0, 1)
   ZEND_ARG_INFO(0, chunk)
 ZEND_END_ARG_INFO()
