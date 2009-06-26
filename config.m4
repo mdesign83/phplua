@@ -12,6 +12,9 @@ if test "$PHP_LUA" != "no"; then
 		if test -f $i/include/lua/lua.h; then
 			LUA_DIR=$i
 			LUA_INCDIR=$i/include/lua
+		elif test -f $i/include/lua5.1/lua.h; then
+			LUA_DIR=$i
+			LUA_INCDIR=$i/include/lua5.1
 		elif test -f $i/include/lua.h; then
 			LUA_DIR=$i
 			LUA_INCDIR=$i/include
