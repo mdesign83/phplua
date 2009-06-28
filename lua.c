@@ -510,9 +510,9 @@ PHP_METHOD(lua, __call)
 {
   int level, retcount;
   char *function, *func;
-  long function_len;
+  int function_len;
   zval *args;
-  int nresults = LUA_MULTRET;
+  long nresults = LUA_MULTRET;
   lua_State *L = getLua();
 
   LUA_STACK_START(L);
@@ -570,7 +570,7 @@ PHP_METHOD(lua, __call)
 PHP_METHOD(lua, call_function)
 {
   char *function;
-  char *function_len;
+  int function_len;
   zval *args;
   lua_State *L;
   int level;
@@ -608,7 +608,7 @@ PHP_METHOD(lua, call_table_self)
 PHP_METHOD(lua, evaluate)
 {
   int error;
-  long code_len;
+  int code_len;
   char *code;
   lua_State *L = getLua();
 
@@ -647,7 +647,7 @@ PHP_METHOD(lua, evaluate)
 PHP_METHOD(lua, evaluatefile) 
 {
   int error;
-  long file_len;
+  int file_len;
   char *file;
   lua_State *L = getLua();
 
