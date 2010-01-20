@@ -60,7 +60,7 @@ static zend_class_entry *lua_ce;
 typedef struct _php_lua_object {
   zend_object std;
   lua_State *L;
-  zval **callbacks;
+  zval* callbacks;
   long callback_count;
 } php_lua_object;
 
@@ -119,7 +119,7 @@ static void php_lua_push_array(lua_State *L, zval *array TSRMLS_DC) /* {{{ */
     hash_key=zend_hash_get_current_key_ex(arr_hash, &key, &key_len, &index, 0, &pointer);
 
     if (hash_key == HASH_KEY_IS_LONG && index == 0) {
-      php_error_docref(NULL TSRMLS_CC, E_WARNING, "Trying to push array index %d to lua which is unsupported in lua. Element has been discarded",index);
+      php_error_docref(NULL TSRMLS_CC, E_WARNING, "Trying to push array index %ld to lua which is unsupported in lua. Element has been discarded",index);
     }
     else {
       ALLOC_INIT_ZVAL(zkey);
@@ -273,7 +273,7 @@ static void php_lua_object_dtor(void *object, zend_object_handle handle TSRMLS_D
 
   long i;
   for (i=0;i<intern->callback_count;i++)
-    efree(intern->callbacks[i]);
+    zval_dtor(&intern->callbacks[i]);
   efree(intern->callbacks);
   if (intern->L) {
     lua_close(intern->L);
@@ -372,7 +372,7 @@ static int php_lua_callback(lua_State *L) /* {{{ */
 
   ALLOC_INIT_ZVAL(return_value);
 
-  if (!zend_is_callable(object->callbacks[selected_callback_index],0,NULL))
+  if (!zend_is_callable(&object->callbacks[selected_callback_index],0,NULL))
     return;
 
   zval **params;
@@ -389,7 +389,7 @@ static int php_lua_callback(lua_State *L) /* {{{ */
 
   /* XXX no check - do we need one? :S */
   /* johannes said i should use zend_call_method but this only allows up to 2 parameters?! */
-  call_user_function(EG(function_table),NULL,object->callbacks[selected_callback_index],return_value,n,params TSRMLS_CC);
+  call_user_function(EG(function_table),NULL,&object->callbacks[selected_callback_index],return_value,n,params TSRMLS_CC);
 
   /* hmm...what if the result is NULL? should php return a return value (NULL) then or just return 0? :S */
   php_lua_push_zval(L,return_value TSRMLS_CC);
@@ -725,11 +725,8 @@ PHP_METHOD(lua,expose_function)
   }
   /* hmm...out of memory check? */
   object->callbacks=erealloc(object->callbacks,sizeof(zval)*(object->callback_count+1));
-
-  ALLOC_INIT_ZVAL(object->callbacks[object->callback_count]);
-  *object->callbacks[object->callback_count] = *callback;
-  zval_copy_ctor(object->callbacks[object->callback_count]);
-
+  object->callbacks[object->callback_count] = *callback;
+  zval_copy_ctor(&object->callbacks[object->callback_count]);
   object->callback_count++;
 }
 /* }}} */
