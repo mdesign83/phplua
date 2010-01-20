@@ -72,13 +72,13 @@ array(5) {
   string(5) "rumms"
 }
 
-Warning: main(): Trying to push array index 0 to lua which is unsupported in lua. Element has been discarded in /home/mop/projects/phplua/tests/011.php on line 5
+Warning: main(): Trying to push array index 0 to lua which is unsupported in lua. Element has been discarded in /home/mop/projekte/phplua/tests/011.php on line 5
 
-Warning: main(): Trying to push array index 0 to lua which is unsupported in lua. Element has been discarded in /home/mop/projects/phplua/tests/011.php on line 5
+Warning: main(): Trying to push array index 0 to lua which is unsupported in lua. Element has been discarded in /home/mop/projekte/phplua/tests/011.php on line 5
 
-Warning: main(): Trying to push array index 0 to lua which is unsupported in lua. Element has been discarded in /home/mop/projects/phplua/tests/011.php on line 5
+Warning: main(): Trying to push array index 0 to lua which is unsupported in lua. Element has been discarded in /home/mop/projekte/phplua/tests/011.php on line 5
 
-Warning: main(): Trying to push array index 0 to lua which is unsupported in lua. Element has been discarded in /home/mop/projects/phplua/tests/011.php on line 5
+Warning: main(): Trying to push array index 0 to lua which is unsupported in lua. Element has been discarded in /home/mop/projekte/phplua/tests/011.php on line 5
 Pautz(null)
 Hund(null)
 Def(null)

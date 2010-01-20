@@ -45,8 +45,6 @@ PHP_MINFO_FUNCTION(lua);
 PHP_FUNCTION(confirm_lua_compiled);	/* For testing, remove later. */
 
 ZEND_BEGIN_MODULE_GLOBALS(lua)
-        zval **lua_callback;
-        long lua_callback_count;
         zend_bool load_standard_libs;
 ZEND_END_MODULE_GLOBALS(lua)
 

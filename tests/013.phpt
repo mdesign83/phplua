@@ -14,63 +14,63 @@ var_dump($lua->math);
 --EXPECTF--
 NULL
 
-Warning: main(): invalid type `6' passed from lua. in /home/mop/projects/phplua/tests/013.php on line 7
+Warning: main(): invalid type `6' passed from lua. in /home/mop/projekte/phplua/tests/013.php on line 7
 
-Warning: main(): invalid type `6' passed from lua. in /home/mop/projects/phplua/tests/013.php on line 7
+Warning: main(): invalid type `6' passed from lua. in /home/mop/projekte/phplua/tests/013.php on line 7
 
-Warning: main(): invalid type `6' passed from lua. in /home/mop/projects/phplua/tests/013.php on line 7
+Warning: main(): invalid type `6' passed from lua. in /home/mop/projekte/phplua/tests/013.php on line 7
 
-Warning: main(): invalid type `6' passed from lua. in /home/mop/projects/phplua/tests/013.php on line 7
+Warning: main(): invalid type `6' passed from lua. in /home/mop/projekte/phplua/tests/013.php on line 7
 
-Warning: main(): invalid type `6' passed from lua. in /home/mop/projects/phplua/tests/013.php on line 7
+Warning: main(): invalid type `6' passed from lua. in /home/mop/projekte/phplua/tests/013.php on line 7
 
-Warning: main(): invalid type `6' passed from lua. in /home/mop/projects/phplua/tests/013.php on line 7
+Warning: main(): invalid type `6' passed from lua. in /home/mop/projekte/phplua/tests/013.php on line 7
 
-Warning: main(): invalid type `6' passed from lua. in /home/mop/projects/phplua/tests/013.php on line 7
+Warning: main(): invalid type `6' passed from lua. in /home/mop/projekte/phplua/tests/013.php on line 7
 
-Warning: main(): invalid type `6' passed from lua. in /home/mop/projects/phplua/tests/013.php on line 7
+Warning: main(): invalid type `6' passed from lua. in /home/mop/projekte/phplua/tests/013.php on line 7
 
-Warning: main(): invalid type `6' passed from lua. in /home/mop/projects/phplua/tests/013.php on line 7
+Warning: main(): invalid type `6' passed from lua. in /home/mop/projekte/phplua/tests/013.php on line 7
 
-Warning: main(): invalid type `6' passed from lua. in /home/mop/projects/phplua/tests/013.php on line 7
+Warning: main(): invalid type `6' passed from lua. in /home/mop/projekte/phplua/tests/013.php on line 7
 
-Warning: main(): invalid type `6' passed from lua. in /home/mop/projects/phplua/tests/013.php on line 7
+Warning: main(): invalid type `6' passed from lua. in /home/mop/projekte/phplua/tests/013.php on line 7
 
-Warning: main(): invalid type `6' passed from lua. in /home/mop/projects/phplua/tests/013.php on line 7
+Warning: main(): invalid type `6' passed from lua. in /home/mop/projekte/phplua/tests/013.php on line 7
 
-Warning: main(): invalid type `6' passed from lua. in /home/mop/projects/phplua/tests/013.php on line 7
+Warning: main(): invalid type `6' passed from lua. in /home/mop/projekte/phplua/tests/013.php on line 7
 
-Warning: main(): invalid type `6' passed from lua. in /home/mop/projects/phplua/tests/013.php on line 7
+Warning: main(): invalid type `6' passed from lua. in /home/mop/projekte/phplua/tests/013.php on line 7
 
-Warning: main(): invalid type `6' passed from lua. in /home/mop/projects/phplua/tests/013.php on line 7
+Warning: main(): invalid type `6' passed from lua. in /home/mop/projekte/phplua/tests/013.php on line 7
 
-Warning: main(): invalid type `6' passed from lua. in /home/mop/projects/phplua/tests/013.php on line 7
+Warning: main(): invalid type `6' passed from lua. in /home/mop/projekte/phplua/tests/013.php on line 7
 
-Warning: main(): invalid type `6' passed from lua. in /home/mop/projects/phplua/tests/013.php on line 7
+Warning: main(): invalid type `6' passed from lua. in /home/mop/projekte/phplua/tests/013.php on line 7
 
-Warning: main(): invalid type `6' passed from lua. in /home/mop/projects/phplua/tests/013.php on line 7
+Warning: main(): invalid type `6' passed from lua. in /home/mop/projekte/phplua/tests/013.php on line 7
 
-Warning: main(): invalid type `6' passed from lua. in /home/mop/projects/phplua/tests/013.php on line 7
+Warning: main(): invalid type `6' passed from lua. in /home/mop/projekte/phplua/tests/013.php on line 7
 
-Warning: main(): invalid type `6' passed from lua. in /home/mop/projects/phplua/tests/013.php on line 7
+Warning: main(): invalid type `6' passed from lua. in /home/mop/projekte/phplua/tests/013.php on line 7
 
-Warning: main(): invalid type `6' passed from lua. in /home/mop/projects/phplua/tests/013.php on line 7
+Warning: main(): invalid type `6' passed from lua. in /home/mop/projekte/phplua/tests/013.php on line 7
 
-Warning: main(): invalid type `6' passed from lua. in /home/mop/projects/phplua/tests/013.php on line 7
+Warning: main(): invalid type `6' passed from lua. in /home/mop/projekte/phplua/tests/013.php on line 7
 
-Warning: main(): invalid type `6' passed from lua. in /home/mop/projects/phplua/tests/013.php on line 7
+Warning: main(): invalid type `6' passed from lua. in /home/mop/projekte/phplua/tests/013.php on line 7
 
-Warning: main(): invalid type `6' passed from lua. in /home/mop/projects/phplua/tests/013.php on line 7
+Warning: main(): invalid type `6' passed from lua. in /home/mop/projekte/phplua/tests/013.php on line 7
 
-Warning: main(): invalid type `6' passed from lua. in /home/mop/projects/phplua/tests/013.php on line 7
+Warning: main(): invalid type `6' passed from lua. in /home/mop/projekte/phplua/tests/013.php on line 7
 
-Warning: main(): invalid type `6' passed from lua. in /home/mop/projects/phplua/tests/013.php on line 7
+Warning: main(): invalid type `6' passed from lua. in /home/mop/projekte/phplua/tests/013.php on line 7
 
-Warning: main(): invalid type `6' passed from lua. in /home/mop/projects/phplua/tests/013.php on line 7
+Warning: main(): invalid type `6' passed from lua. in /home/mop/projekte/phplua/tests/013.php on line 7
 
-Warning: main(): invalid type `6' passed from lua. in /home/mop/projects/phplua/tests/013.php on line 7
+Warning: main(): invalid type `6' passed from lua. in /home/mop/projekte/phplua/tests/013.php on line 7
 
-Warning: main(): invalid type `6' passed from lua. in /home/mop/projects/phplua/tests/013.php on line 7
+Warning: main(): invalid type `6' passed from lua. in /home/mop/projekte/phplua/tests/013.php on line 7
 array(31) {
   ["log"]=>
   NULL
@@ -83,7 +83,7 @@ array(31) {
   ["ldexp"]=>
   NULL
   ["pi"]=>
-  float(3.14159265359)
+  float(3.1415926535898)
   ["cos"]=>
   NULL
   ["tanh"]=>

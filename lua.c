@@ -51,6 +51,7 @@ lua_pop(L, 1)
 ZEND_DECLARE_MODULE_GLOBALS(lua)
 
 #define getLuaZ(var) (((php_lua_object*)zend_object_store_get_object(var TSRMLS_CC))->L)
+#define getLuaY() ((php_lua_object*)zend_object_store_get_object(getThis() TSRMLS_CC))
 #define getLua()     getLuaZ(getThis())
 
 static zend_object_handlers lua_handlers;
@@ -59,6 +60,8 @@ static zend_class_entry *lua_ce;
 typedef struct _php_lua_object {
   zend_object std;
   lua_State *L;
+  zval **callbacks;
+  long callback_count;
 } php_lua_object;
 
 static const luaL_Reg php_lualibs[] = {
@@ -268,6 +271,10 @@ static void php_lua_object_dtor(void *object, zend_object_handle handle TSRMLS_D
   php_lua_object *intern = (php_lua_object*)object;
   zend_object_std_dtor(&(intern->std) TSRMLS_CC);
 
+  long i;
+  for (i=0;i<intern->callback_count;i++)
+    efree(intern->callbacks[i]);
+  efree(intern->callbacks);
   if (intern->L) {
     lua_close(intern->L);
   }
@@ -292,7 +299,7 @@ static zval *php_lua_read_property(zval *obj, zval *prop, int type TSRMLS_DC) /*
     MAKE_STD_ZVAL(retval);
     lua_getfield(L, LUA_GLOBALSINDEX, Z_STRVAL_P(prop) TSRMLS_CC);
     php_lua_get_zval_from_stack(L, -1, retval TSRMLS_CC);
-    ZVAL_DELREF(retval);
+    Z_DELREF_P(retval);
   } else {
     ALLOC_INIT_ZVAL(retval);
   }
@@ -345,6 +352,8 @@ static zend_object_value php_lua_create_object(zend_class_entry *ce TSRMLS_DC) /
 
   intern = ecalloc(1, sizeof(php_lua_object));
   intern->L = L;
+  intern->callback_count=0;
+  intern->callbacks=emalloc(sizeof(zval*));
   zend_object_std_init(&(intern->std), ce TSRMLS_CC);
   zend_hash_copy(intern->std.properties,
       &ce->default_properties, (copy_ctor_func_t) zval_add_ref,
@@ -357,12 +366,13 @@ static zend_object_value php_lua_create_object(zend_class_entry *ce TSRMLS_DC) /
 
 static int php_lua_callback(lua_State *L) /* {{{ */
 {
-  int selected_callback_index=(int)lua_tonumber(L, lua_upvalueindex(1));
+  php_lua_object *object=(php_lua_object*)lua_topointer(L, lua_upvalueindex(1));
+  long selected_callback_index=(long)lua_tonumber(L, lua_upvalueindex(2));
   zval *return_value;
 
   ALLOC_INIT_ZVAL(return_value);
 
-  if (!zend_is_callable(LUA_G(lua_callback)[selected_callback_index],0,NULL))
+  if (!zend_is_callable(object->callbacks[selected_callback_index],0,NULL))
     return;
 
   zval **params;
@@ -379,7 +389,7 @@ static int php_lua_callback(lua_State *L) /* {{{ */
 
   /* XXX no check - do we need one? :S */
   /* johannes said i should use zend_call_method but this only allows up to 2 parameters?! */
-  call_user_function(EG(function_table),NULL,LUA_G(lua_callback)[selected_callback_index],return_value,n,params TSRMLS_CC);
+  call_user_function(EG(function_table),NULL,object->callbacks[selected_callback_index],return_value,n,params TSRMLS_CC);
 
   /* hmm...what if the result is NULL? should php return a return value (NULL) then or just return 0? :S */
   php_lua_push_zval(L,return_value TSRMLS_CC);
@@ -700,25 +710,27 @@ PHP_METHOD(lua,expose_function)
   zval *callback;
   char *lua_name;
   long len;
-
-  lua_State *L = getLua();
+  
+  php_lua_object *object=getLuaY();
+  lua_State *L = object->L;
 
   if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC,"sz",&lua_name,&len,&callback) == FAILURE)
     return;
 
   if (zend_is_callable(callback,0,NULL)) {
-    lua_pushnumber(L,LUA_G(lua_callback_count));
-    lua_pushcclosure(L, php_lua_callback,1);
+    lua_pushlightuserdata(L,object);
+    lua_pushnumber(L,object->callback_count);
+    lua_pushcclosure(L, php_lua_callback,2);
     lua_setglobal(L, lua_name);
   }
   /* hmm...out of memory check? */
-  LUA_G(lua_callback)=erealloc(LUA_G(lua_callback),sizeof(zval)*(LUA_G(lua_callback_count)+1));
+  object->callbacks=erealloc(object->callbacks,sizeof(zval)*(object->callback_count+1));
 
-  ALLOC_INIT_ZVAL(LUA_G(lua_callback)[LUA_G(lua_callback_count)]);
-  *LUA_G(lua_callback)[LUA_G(lua_callback_count)] = *callback;
-  zval_copy_ctor(LUA_G(lua_callback)[LUA_G(lua_callback_count)]);
+  ALLOC_INIT_ZVAL(object->callbacks[object->callback_count]);
+  *object->callbacks[object->callback_count] = *callback;
+  zval_copy_ctor(object->callbacks[object->callback_count]);
 
-  LUA_G(lua_callback_count)++;
+  object->callback_count++;
 }
 /* }}} */
 
@@ -872,8 +884,6 @@ PHP_MSHUTDOWN_FUNCTION(lua)
 */
 PHP_RINIT_FUNCTION(lua)
 {
-  LUA_G(lua_callback_count)=0;
-  LUA_G(lua_callback)=emalloc(sizeof(zval*));
   return SUCCESS;
 }
 /* }}} */
@@ -882,10 +892,6 @@ PHP_RINIT_FUNCTION(lua)
 */
 PHP_RSHUTDOWN_FUNCTION(lua)
 {
-  long i;
-  for (i=0;i<LUA_G(lua_callback_count);i++)
-    efree(LUA_G(lua_callback)[i]);
-  efree(LUA_G(lua_callback));
   return SUCCESS;
 }
 /* }}} */
