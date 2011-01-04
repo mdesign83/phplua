@@ -709,7 +709,7 @@ PHP_METHOD(lua,expose_function)
 {
   zval *callback;
   char *lua_name;
-  long len;
+  int len;
   
   php_lua_object *object=getLuaY();
   lua_State *L = object->L;
@@ -735,7 +735,7 @@ PHP_METHOD(lua,expose_function)
 PHP_METHOD(lua,compile)
 {
   char *chunk;
-  long len;
+  int len;
   int error;
 
   lua_State *L = lua_newstate(php_lua_alloc, NULL);
@@ -748,7 +748,7 @@ PHP_METHOD(lua,compile)
     lua_close(L);
     return;
   }
-  
+
   error = luaL_loadbuffer(L, chunk, len, "line");
   if (error) {
     php_error_docref(NULL TSRMLS_CC, E_WARNING, "lua error: %s", lua_tostring(L, -1));
