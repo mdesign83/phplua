@@ -299,7 +299,7 @@ static zval *php_lua_read_property(zval *obj, zval *prop, int type TSRMLS_DC) /*
     MAKE_STD_ZVAL(retval);
     lua_getfield(L, LUA_GLOBALSINDEX, Z_STRVAL_P(prop) TSRMLS_CC);
     php_lua_get_zval_from_stack(L, -1, retval TSRMLS_CC);
-#if PHP_VERSION_ID>=503000
+#if PHP_VERSION_ID>=50300
      Z_DELREF_P(retval);
 #else
      retval->refcount--;
