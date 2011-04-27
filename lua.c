@@ -191,6 +191,7 @@ static void php_lua_get_zval_from_stack(lua_State *L, int index, zval *ret TSRML
 {
   const char *value;
   size_t value_len;
+  zval *akey,*aval;
 
   switch (lua_type(L, index)) {
     case LUA_TBOOLEAN:
@@ -211,8 +212,6 @@ static void php_lua_get_zval_from_stack(lua_State *L, int index, zval *ret TSRML
       /* notify lua to traverse the table */
       lua_pushnil(L);
 
-      zval *akey,*aval;
-
       /* table has been moved by one because of the pushnil */
       /* this will ONLY work with negative indices! */
       while (lua_next(L, index-1) != 0)
@@ -221,8 +220,8 @@ static void php_lua_get_zval_from_stack(lua_State *L, int index, zval *ret TSRML
         ALLOC_INIT_ZVAL(aval);
 
         /* `key' is at index -2 and `value' at index -1 */
-        php_lua_get_zval_from_stack(L,-2,akey);
-        php_lua_get_zval_from_stack(L,-1,aval);
+        php_lua_get_zval_from_stack(L,-2,akey TSRMLS_CC);
+        php_lua_get_zval_from_stack(L,-1,aval TSRMLS_CC);
 
         switch(Z_TYPE_P(akey))
         {
@@ -268,10 +267,10 @@ static int php_lua_print(lua_State *L) /* {{{ */
 
 static void php_lua_object_dtor(void *object, zend_object_handle handle TSRMLS_DC) /* {{{ */
 {
+  long i;
   php_lua_object *intern = (php_lua_object*)object;
   zend_object_std_dtor(&(intern->std) TSRMLS_CC);
 
-  long i;
   for (i=0;i<intern->callback_count;i++)
     zval_dtor(&intern->callbacks[i]);
   efree(intern->callbacks);
@@ -297,7 +296,7 @@ static zval *php_lua_read_property(zval *obj, zval *prop, int type TSRMLS_DC) /*
 
   if (Z_TYPE_P(prop) == IS_STRING) {
     MAKE_STD_ZVAL(retval);
-    lua_getfield(L, LUA_GLOBALSINDEX, Z_STRVAL_P(prop) TSRMLS_CC);
+    lua_getfield(L, LUA_GLOBALSINDEX, Z_STRVAL_P(prop));
     php_lua_get_zval_from_stack(L, -1, retval TSRMLS_CC);
 #if PHP_VERSION_ID>=50300
      Z_DELREF_P(retval);
@@ -370,21 +369,28 @@ static zend_object_value php_lua_create_object(zend_class_entry *ce TSRMLS_DC) /
 
 static int php_lua_callback(lua_State *L) /* {{{ */
 {
+  int n,i;
   php_lua_object *object=(php_lua_object*)lua_topointer(L, lua_upvalueindex(1));
   long selected_callback_index=(long)lua_tonumber(L, lua_upvalueindex(2));
+  #ifdef ZTS
+  TSRMLS_D=(void ***)lua_topointer(L,lua_upvalueindex(3));
+  #endif
   zval *return_value;
+  zval **params;
 
   ALLOC_INIT_ZVAL(return_value);
 
+#if PHP_VERSION_ID>=50300
+  if (!zend_is_callable(&object->callbacks[selected_callback_index],0,NULL TSRMLS_CC))
+#else
   if (!zend_is_callable(&object->callbacks[selected_callback_index],0,NULL))
-    return;
+#endif
+    return 0;
 
-  zval **params;
-  int n = lua_gettop(L);    /* number of arguments */
+  n = lua_gettop(L);    /* number of arguments */
 
   params=emalloc(n*sizeof(zval));
 
-  int i;
   for (i = 1; i <= n; i++) {
     ALLOC_INIT_ZVAL(params[i-1]);
     /* php_lua_get_zval_from_stack won't work with positive indices */
@@ -409,8 +415,11 @@ static int php_lua_callback(lua_State *L) /* {{{ */
   return 1;
 } /* }}} */
 
-static void php_lua_call_table_with_arguments(lua_State *L,int level,int table_index,char *function,int propagate_self,zval *args,zval *return_value) /* {{{ */
+static void php_lua_call_table_with_arguments(lua_State *L,int level,int table_index,char *function,int propagate_self,zval *args,zval *return_value TSRMLS_DC) /* {{{ */
 {
+  int retcount,i;
+  zval *val;
+
   lua_getfield(L,table_index,function);
   if (lua_type(L,lua_gettop(L)) != LUA_TFUNCTION) {
     lua_pop(L, lua_gettop(L) - level);
@@ -432,9 +441,7 @@ static void php_lua_call_table_with_arguments(lua_State *L,int level,int table_i
 
   /* always return an array. otherwise we couldn't distinguish between a table return or a multi return */
   array_init(return_value);
-  int retcount = lua_gettop(L) - level;
-  int i;
-  zval *val;
+  retcount = lua_gettop(L) - level;
 
   for (i = -retcount; i < 0; i++)
   {
@@ -483,7 +490,7 @@ static void php_lua_call_table_function(INTERNAL_FUNCTION_PARAMETERS,int propaga
   }
   level=lua_gettop(L);
 
-  php_lua_call_table_with_arguments(L,level,-1,Z_STRVAL_PP(lua_function),propagate_self,args,return_value);
+  php_lua_call_table_with_arguments(L,level,-1,Z_STRVAL_PP(lua_function),propagate_self,args,return_value TSRMLS_CC);
 
   /* remove the table which is still on top */
   lua_pop(L,-1);
@@ -511,9 +518,9 @@ PHP_METHOD(lua, __construct)
 {
   lua_State *L = getLua();
   // mop: open standard libs if desired
-  if (lua_globals.load_standard_libs)
+  if (INI_BOOL("lua.load_standard_libs")) {
     luaL_openlibs(L);
-
+  }
   lua_register(L, "print", php_lua_print);
 }
 /* }}} */
@@ -598,7 +605,7 @@ PHP_METHOD(lua, call_function)
     return;
   }
 
-  php_lua_call_table_with_arguments(L,level,LUA_GLOBALSINDEX,function,0,args,return_value);
+  php_lua_call_table_with_arguments(L,level,LUA_GLOBALSINDEX,function,0,args,return_value TSRMLS_CC);
 
   LUA_STACK_END(L);
 }
@@ -623,7 +630,10 @@ PHP_METHOD(lua, evaluate)
 {
   int error;
   int code_len;
+  int retcount,i;
   char *code;
+  zval *val;
+
   lua_State *L = getLua();
 
   LUA_STACK_START(L);
@@ -640,9 +650,7 @@ PHP_METHOD(lua, evaluate)
 
   /* always return an array. otherwise we couldn't distinguish between a table return or a multi return */
   array_init(return_value);
-  int retcount = lua_gettop(L);
-  int i;
-  zval *val;
+  retcount = lua_gettop(L);
 
   for (i = -retcount; i < 0; i++)
   {
@@ -664,6 +672,9 @@ PHP_METHOD(lua, evaluatefile)
   int file_len;
   char *file;
   lua_State *L = getLua();
+  int retcount;
+  int i;
+  zval *val;
 
   LUA_STACK_START(L);
 
@@ -682,11 +693,8 @@ PHP_METHOD(lua, evaluatefile)
     php_error_docref(NULL TSRMLS_CC, E_WARNING, "lua error: %s", lua_tostring(L, -1)); 
     lua_pop(L, 1);
   } 
-  
+  retcount=lua_gettop(L);
   array_init(return_value);
-  int retcount = lua_gettop(L);
-  int i;
-  zval *val;
 
   for (i = -retcount; i < 0; i++)
   {
@@ -714,6 +722,7 @@ PHP_METHOD(lua,expose_function)
   zval *callback;
   char *lua_name;
   int len;
+  int param_count;
   
   php_lua_object *object=getLuaY();
   lua_State *L = object->L;
@@ -721,10 +730,20 @@ PHP_METHOD(lua,expose_function)
   if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC,"sz",&lua_name,&len,&callback) == FAILURE)
     return;
 
+#if PHP_VERSION_ID>=50300
+  if (zend_is_callable(callback,0,NULL TSRMLS_CC)) {
+#else
   if (zend_is_callable(callback,0,NULL)) {
+#endif
     lua_pushlightuserdata(L,object);
     lua_pushnumber(L,object->callback_count);
-    lua_pushcclosure(L, php_lua_callback,2);
+    #ifdef ZTS
+    lua_pushlightuserdata(L,TSRMLS_C);
+    param_count=3;
+    #else
+    param_count=2;
+    #endif
+    lua_pushcclosure(L, php_lua_callback,param_count);
     lua_setglobal(L, lua_name);
   }
   /* hmm...out of memory check? */
@@ -852,9 +871,10 @@ static void php_lua_init_globals(zend_lua_globals *lua_globals)
 */
 PHP_MINIT_FUNCTION(lua)
 {
-  REGISTER_INI_ENTRIES();
-
   zend_class_entry ce;
+  ZEND_INIT_MODULE_GLOBALS(lua, php_lua_init_globals, NULL);
+
+  REGISTER_INI_ENTRIES();
   INIT_CLASS_ENTRY(ce, "lua", lua_class_functions);
   lua_ce = zend_register_internal_class(&ce TSRMLS_CC);
   lua_ce->create_object = php_lua_create_object;
@@ -865,8 +885,6 @@ PHP_MINIT_FUNCTION(lua)
   lua_ce->ce_flags |= ZEND_ACC_FINAL;
 
   zend_declare_class_constant_long(lua_ce, "MULTRET", sizeof("MULTRET")-1, LUA_MULTRET TSRMLS_CC);
-
-  ZEND_INIT_MODULE_GLOBALS(lua, php_lua_init_globals, NULL);
 
   return SUCCESS;
 }
