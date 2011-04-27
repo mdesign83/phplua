@@ -24,7 +24,7 @@
 extern zend_module_entry lua_module_entry;
 #define phpext_lua_ptr &lua_module_entry
 
-#define PHP_LUA_VERSION "0.2.2"
+#define PHP_LUA_VERSION "0.2.3-dev"
 
 #ifdef PHP_WIN32
 #define PHP_LUA_API __declspec(dllexport)
