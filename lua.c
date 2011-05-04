@@ -792,11 +792,6 @@ PHP_METHOD(lua,compile)
   }
 }
 
-/* {{{ lua_functions[] */
-zend_function_entry lua_functions[] = {
-  {NULL, NULL, NULL}
-};
-/* }}} */
 
 /* {{{ ARG_INFO */
 
@@ -936,7 +931,7 @@ PHP_MINFO_FUNCTION(lua)
 zend_module_entry lua_module_entry = {
   STANDARD_MODULE_HEADER,
   "lua",
-  lua_functions,
+  NULL,
   PHP_MINIT(lua),
   PHP_MSHUTDOWN(lua),
   PHP_RINIT(lua),
