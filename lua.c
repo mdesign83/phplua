@@ -358,9 +358,13 @@ static zend_object_value php_lua_create_object(zend_class_entry *ce TSRMLS_DC) /
   intern->callback_count=0;
   intern->callbacks=emalloc(sizeof(zval*));
   zend_object_std_init(&(intern->std), ce TSRMLS_CC);
+#if PHP_VERSION_ID < 50399  
   zend_hash_copy(intern->std.properties,
       &ce->default_properties, (copy_ctor_func_t) zval_add_ref,
       (void *) &tmp, sizeof(zval *));
+#else
+  object_properties_init(&(intern->std), ce);
+#endif
 
   retval.handle = zend_objects_store_put(intern, php_lua_object_dtor, NULL, NULL TSRMLS_CC);
   retval.handlers = &lua_handlers;
@@ -682,10 +686,12 @@ PHP_METHOD(lua, evaluatefile)
     return;	 
   }
 
+#if PHP_VERSION_ID < 50399  
   if (php_check_open_basedir(file TSRMLS_CC) || (PG(safe_mode) && !php_checkuid(file, "rb+", CHECKUID_CHECK_MODE_PARAM))) {
     LUA_STACK_END(L);
     RETURN_FALSE;
   }
+#endif 
 
   error = luaL_dofile(L, file);
 
